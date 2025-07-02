@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: pos_main
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecret
+    #admin
+      #- POSTGRES_USER=admin
+      #- POSTGRES_PASSWORD=supersecret
+      #- POSTGRES_DB: pos_main
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # --- SECCIÓN AÑADIDA ---
+    healthcheck:
+      # pg_isready es un comando de postgres que revisa si la BD está lista
+      test: ["CMD-SHELL", "pg_isready -U admin -d pos_main"]
+      interval: 10s   # Revisa cada 10 segundos
+      timeout: 5s     # Espera 5 segundos por una respuesta
+      retries: 5      # Inténtalo 5 veces antes de marcarlo como no saludable
+
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - '4000:4000'
+    env_file:
+      - ./backend/.env
+    # --- SECCIÓN MODIFICADA ---
+    # Ahora el backend depende de que el servicio 'db' esté 'saludable'
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - '5174:5174'
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app/
+      - /app/node_modules
+
+volumes:
+  postgres_data:

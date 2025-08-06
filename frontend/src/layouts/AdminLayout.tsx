@@ -8,32 +8,36 @@ const DashboardIcon = () => <svg className="w-6 h-6" fill="none" stroke="current
 const ProductsIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>;
 const OrdersIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>;
 const PosIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>;
+const UsersIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h-10a2 2 0 01-2-2V8a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2zM12 10v4m-2-2h4"></path></svg>; // Nuevo icono para usuarios
 
 
 const allNavLinks = [
   { name: 'Dashboard', href: '/admin/dashboard', roles: ['administrador'], icon: <DashboardIcon /> },
-  { name: 'Productos', href: '/admin/productos', roles: ['administrador'], icon: <ProductsIcon /> },
+  { name: 'Productos', href: '/admin/productos', roles: ['administrador'], icon: <ProductsIcon /> }, // Cambiado a 'products' para coincidir con la ruta
+  { name: 'Usuarios', href: '/admin/users', roles: ['administrador'], icon: <UsersIcon /> }, // <-- Nuevo enlace para usuarios
   { name: 'Pedidos', href: '/admin/pedidos', roles: ['administrador', 'cocinero'], icon: <OrdersIcon /> },
   { name: 'Punto de Venta', href: '/admin/pos', roles: ['administrador', 'cajero'], icon: <PosIcon /> },
 ];
 
-export const AdminLayout = () => {
+export const AdminLayout: React.FC = () => { // Ya no necesita AdminLayoutProps
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { nombre, rol, companyName } = useAuth();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    // Para asegurar que el subdominio se limpie, redirige a la raíz del login
+    window.location.href = '/login'; 
   };
 
+  // Filtra los enlaces de navegación según el rol del usuario
   const visibleLinks = allNavLinks.filter(link => rol && link.roles.includes(rol));
 
   return (
     <div className="relative min-h-screen md:flex">
       {/* Overlay para móvil */}
       <div 
-        className={`fixed inset-0 z-20 md:hidden ${isSidebarOpen ? 'block' : 'hidden'}`}
+        className={`fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden ${isSidebarOpen ? 'block' : 'hidden'}`}
         onClick={() => setSidebarOpen(false)}
       ></div>
       {/* Sidebar */}
@@ -47,6 +51,7 @@ export const AdminLayout = () => {
         </div>
         <nav className="flex-1 px-4 py-4 space-y-2">
           {visibleLinks.map((link) => {
+            // Determina si el enlace está activo basado en la ruta actual
             const isActive = location.pathname.startsWith(link.href);
             return (
               <Link
@@ -80,8 +85,11 @@ export const AdminLayout = () => {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
 
-                {/* Espaciador para centrar el contenido de la derecha en desktop */}
-                <div className="hidden md:block"></div>
+                {/* Título de la página actual (opcional, puedes agregar un h1 aquí) */}
+                {/* Puedes añadir un título dinámico basado en location.pathname si lo deseas */}
+                <div className="hidden md:block text-xl font-semibold text-gray-700">
+                  {/* Ejemplo: {location.pathname.split('/').pop()?.toUpperCase() || 'DASHBOARD'} */}
+                </div>
 
                 {/* Perfil de Usuario y Logout */}
                 <div className="flex items-center gap-4">
@@ -98,6 +106,7 @@ export const AdminLayout = () => {
 
         {/* Área de Contenido de la Página */}
         <main className="flex-1 p-6 lg:p-8 bg-gray-50 overflow-y-auto">
+          {/* Aquí es donde se renderizarán los componentes de las rutas anidadas */}
           <Outlet />
         </main>
       </div>

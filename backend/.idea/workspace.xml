@@ -4,11 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="020c52d5-19a1-47a5-8e98-18eafe4abffc" name="Changes" comment="" />
+    <list default="true" id="020c52d5-19a1-47a5-8e98-18eafe4abffc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -33,8 +38,9 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Spring Boot.BackendApplication.executor": "Debug",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Proyects/Proyects/Sistemas API Cafeterias/Sistema/backend",
+    "last_opened_file_path": "C:/BRAYNI/UNTRM/V CICLO/TALLER DE LA PROGRAMACIÓN II/PROYECTOS/MUSIC_PROYECTO",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -70,6 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1751158700679</updated>
       <workItem from="1751158702213" duration="1557000" />
+      <workItem from="1752256889105" duration="2369000" />
     </task>
     <servers />
   </component>

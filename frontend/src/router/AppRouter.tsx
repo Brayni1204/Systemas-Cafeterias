@@ -7,6 +7,7 @@ import { AdminLayout } from '../layouts/AdminLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import DashboardPage from '../pages/admin/DashboardPage';
 import GestionProductosPage from '../pages/admin/GestionProductosPage';
+import GestionUsuariosPage from '../pages/admin/GestionUsuariosPage';
 
 
 export const AppRouter = () => {
@@ -30,6 +31,7 @@ export const AppRouter = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="productos" element={<GestionProductosPage />} />
+            <Route path="users" element={<GestionUsuariosPage />} />
             {/* Aquí puedes añadir más rutas de admin en el futuro */}
           </Route>
         </Route>

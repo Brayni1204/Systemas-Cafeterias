@@ -21,19 +21,23 @@ export const useAuth = () => {
         // El token ha expirado, lo borramos y tratamos como no autenticado
         localStorage.removeItem('token');
         console.log("Token expirado, cerrando sesión.");
-        return { isAuthenticated: false, nombre: null, rol: null, companyName: null };
+        return { isAuthenticated: false, nombre: null, rol: null, companyName: null, tenantId: null }; // Añadido tenantId: null
       }
 
       // Si el token es válido y no ha expirado, devolvemos los datos
-      return { isAuthenticated: true, ...decoded };
+      return { 
+        isAuthenticated: true, 
+        ...decoded,
+        tenantId: decoded.companyName || null // CORRECCIÓN: tenantId es companyName si existe, sino null
+      };
 
     } catch (error) {
       console.error("Token inválido o malformado:", error);
       localStorage.removeItem('token');
-      return { isAuthenticated: false, nombre: null, rol: null, companyName: null };
+      return { isAuthenticated: false, nombre: null, rol: null, companyName: null, tenantId: null }; // Añadido tenantId: null
     }
   }
 
   // Si no hay token, no está autenticado
-  return { isAuthenticated: false, nombre: null, rol: null, companyName: null };
+  return { isAuthenticated: false, nombre: null, rol: null, companyName: null, tenantId: null }; // Añadido tenantId: null
 };

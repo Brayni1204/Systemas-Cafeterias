@@ -18,7 +18,7 @@ const Superadmin = mainSequelize.define('Superadmin', {
     },
   },
   password: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
 }, {

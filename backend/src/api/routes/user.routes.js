@@ -7,15 +7,15 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/user.controller.js";
-import { protectTenantRoute } from "../middlewares/tenant.auth.middleware.js"; // Importa el middleware de protección
+import { protectTenantRoute } from "../middlewares/tenant.auth.middleware.js";
 
 const router = Router();
 
-// Aplica el middleware de protección a todas las rutas del CRUD de usuarios
-router.get("/users", protectTenantRoute, getUsers); // Protegida
-router.get("/users/:id", protectTenantRoute, getUserById); // Protegida
-router.post("/users", protectTenantRoute, createUser); // Protegida
-router.put("/users/:id", protectTenantRoute, updateUser); // Protegida
-router.delete("/users/:id", protectTenantRoute, deleteUser); // Protegida
+// Cambiado el nombre del parámetro a :id_usuario para consistencia
+router.get("/users", protectTenantRoute, getUsers);
+router.get("/users/:id_usuario", protectTenantRoute, getUserById);
+router.post("/users", protectTenantRoute, createUser);
+router.put("/users/:id_usuario", protectTenantRoute, updateUser);
+router.delete("/users/:id_usuario", protectTenantRoute, deleteUser);
 
 export default router;

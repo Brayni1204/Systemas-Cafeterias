@@ -1,10 +1,11 @@
 // backend/src/api/controllers/user.controller.js
-/* import defineUserModel from "../models/Usuario.js"; */
-import { defineUserModel } from "../models/Usuario.js"; // <-- Cambiado a importación nombrada
+
+// Importación para usar bcrypt en la actualización de la contraseña
+import bcrypt from "bcryptjs";
 
 export const getUsers = async (req, res) => {
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
+    const { User } = req.tenantModels;
     const users = await User.findAll();
     res.json(users);
   } catch (error) {
@@ -15,9 +16,9 @@ export const getUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
-    const { id } = req.params;
-    const user = await User.findByPk(id);
+    const { User } = req.tenantModels;
+    const { id } = req.params; // CORREGIDO: Usar id
+    const user = await User.findByPk(id); // CORREGIDO: Usar id para buscar
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
@@ -30,7 +31,7 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
+    const { User } = req.tenantModels;
     const newUser = await User.create(req.body);
     res.status(201).json(newUser);
   } catch (error) {
@@ -39,30 +40,37 @@ export const createUser = async (req, res) => {
   }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
-    const { id } = req.params;
-    const [updatedRows] = await User.update(req.body, {
-      where: { id },
-    });
-    if (updatedRows === 0) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
+    const { User } = req.tenantModels;
+    const { id } = req.params; // CORREGIDO: Usar id
+    const { nombre, email, password, rol } = req.body;
+
+    const usuario = await User.findByPk(id); // CORREGIDO: Usar id para buscar
+
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
-    const updatedUser = await User.findByPk(id);
-    res.json(updatedUser);
+
+    await usuario.update({
+      nombre,
+      email,
+      password: password ? bcrypt.hashSync(password, 10) : usuario.password,
+      rol,
+    });
+
+    res.json({ message: "Usuario actualizado correctamente", user: usuario });
   } catch (error) {
-    console.error("Error al actualizar usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor." });
+    next(error);
   }
 };
 
 export const deleteUser = async (req, res) => {
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
-    const { id } = req.params;
+    const { User } = req.tenantModels;
+    const { id } = req.params; // CORREGIDO: Usar id
     const deletedRows = await User.destroy({
-      where: { id },
+      where: { id_usuario: id }, // CORREGIDO: Usar id_usuario como campo para la búsqueda con el valor de id
     });
     if (deletedRows === 0) {
       return res.status(404).json({ message: "Usuario no encontrado." });

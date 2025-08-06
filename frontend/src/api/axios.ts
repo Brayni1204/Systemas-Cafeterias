@@ -7,18 +7,28 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// --- La Magia de los Interceptores ---
-// Esto se ejecuta ANTES de cada petición que use esta instancia 'api'.
 api.interceptors.request.use(
   (config) => {
-    // Extraemos el subdominio de la URL del navegador
-    const subdomain = window.location.host.split('.')[0];
-    if (subdomain) {
-      // Añadimos la cabecera personalizada
-      config.headers['X-Tenant-ID'] = subdomain;
+    // 1. Intentamos obtener el subdominio del host.
+    const host = window.location.host;
+    const subdomain = host.split('.')[0];
+    let tenantId = null;
+
+    // Si el host no es localhost y tiene un subdominio, lo usamos.
+    if (host !== 'localhost:4000' && subdomain) {
+      tenantId = subdomain;
+    } else {
+      // Si estamos en localhost, obtenemos el tenantId del localStorage.
+      // Asegúrate de que este valor se guarde al momento del login.
+      tenantId = localStorage.getItem('companyName');
     }
 
-    // Si tenemos un token en localStorage, también lo añadimos
+    // 2. Si se encontró un tenantId, lo añadimos a los encabezados.
+    if (tenantId) {
+      config.headers['X-Tenant-ID'] = tenantId;
+    }
+
+    // 3. Añadimos el token de autenticación si existe.
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;

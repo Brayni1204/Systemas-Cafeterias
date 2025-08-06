@@ -26,14 +26,15 @@ const GestionUsuariosPage: React.FC = () => {
   useEffect(() => {
     console.log('useEffect en GestionUsuariosPage ejecutado. companyName:', companyName); // DEBUG
     // CORRECCIÓN: Solo intenta cargar usuarios y conectar WS si isAuthenticated y companyName están definidos
-    if (isAuthenticated && companyName) { 
+    if (isAuthenticated) {
+
       fetchUsers();
 
-      // Unirse a la sala de WebSocket del inquilino
-      // Usamos companyName (que es el subdominio) para construir la sala
-      const tenantRoom = `tenant_${companyName}`; 
-      socket.emit('join_tenant_room', tenantRoom);
-      console.log(`Socket unido a la sala: ${tenantRoom}`);
+      if (companyName) {
+        const tenantRoom = `tenant_${companyName}`; 
+        socket.emit('join_tenant_room', tenantRoom);
+        console.log(`Socket unido a la sala: ${tenantRoom}`);
+      }
 
       // Listeners de WebSocket para actualizaciones en tiempo real
       const handleNewUser = (newUser: User) => {

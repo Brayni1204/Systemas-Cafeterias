@@ -1,6 +1,5 @@
 // backend/src/api/controllers/user.controller.js
 
-// Importación para usar bcrypt en la actualización de la contraseña
 import bcrypt from "bcryptjs";
 
 export const getUsers = async (req, res) => {
@@ -17,8 +16,8 @@ export const getUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { User } = req.tenantModels;
-    const { id } = req.params; // CORREGIDO: Usar id
-    const user = await User.findByPk(id); // CORREGIDO: Usar id para buscar
+    const { id_usuario } = req.params;
+    const user = await User.findByPk(id_usuario);
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
@@ -33,6 +32,9 @@ export const createUser = async (req, res) => {
   try {
     const { User } = req.tenantModels;
     const newUser = await User.create(req.body);
+    const io = req.app.get("io");
+    const tenantId = req.headers["x-tenant-id"];
+    io.to(`tenant_${tenantId}`).emit("nuevo_usuario", newUser); // Emite el evento con el nuevo usuario
     res.status(201).json(newUser);
   } catch (error) {
     console.error("Error al crear usuario:", error);
@@ -43,10 +45,10 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res, next) => {
   try {
     const { User } = req.tenantModels;
-    const { id } = req.params; // CORREGIDO: Usar id
+    const { id_usuario } = req.params;
     const { nombre, email, password, rol } = req.body;
 
-    const usuario = await User.findByPk(id); // CORREGIDO: Usar id para buscar
+    const usuario = await User.findByPk(id_usuario);
 
     if (!usuario) {
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -59,6 +61,10 @@ export const updateUser = async (req, res, next) => {
       rol,
     });
 
+    const io = req.app.get("io");
+    const tenantId = req.headers["x-tenant-id"];
+    io.to(`tenant_${tenantId}`).emit("usuario_actualizado", usuario); // Emite el evento con el usuario actualizado
+
     res.json({ message: "Usuario actualizado correctamente", user: usuario });
   } catch (error) {
     next(error);
@@ -68,13 +74,18 @@ export const updateUser = async (req, res, next) => {
 export const deleteUser = async (req, res) => {
   try {
     const { User } = req.tenantModels;
-    const { id } = req.params; // CORREGIDO: Usar id
+    const { id_usuario } = req.params;
     const deletedRows = await User.destroy({
-      where: { id_usuario: id }, // CORREGIDO: Usar id_usuario como campo para la búsqueda con el valor de id
+      where: { id_usuario },
     });
     if (deletedRows === 0) {
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
+
+    const io = req.app.get("io");
+    const tenantId = req.headers["x-tenant-id"];
+    io.to(`tenant_${tenantId}`).emit("usuario_eliminado", id_usuario); // Emite el evento con el id del usuario eliminado
+
     res.status(204).json({ message: "Usuario eliminado exitosamente." });
   } catch (error) {
     console.error("Error al eliminar usuario:", error);

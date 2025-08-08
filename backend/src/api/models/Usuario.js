@@ -27,7 +27,7 @@ export const defineUserModel = (sequelize) => {
         allowNull: false,
       },
       rol: {
-        type: DataTypes.ENUM("administrador", "cajero", "cocinero"),
+        type: DataTypes.ENUM("administrador", "cajero/mesero", "cocinero"),
         allowNull: false,
       },
     },

@@ -1,5 +1,3 @@
-// frontend/src/api/user.api.ts
-
 import api from './axios';
 import type { User, UserFormValues } from '../types/user.types';
 
@@ -14,8 +12,6 @@ export const getUserByIdRequest = (id_usuario: number) => api.get<User>(`${USER_
 
 export const createUserRequest = (userData: CreateUserDTO) => api.post<User>(USER_BASE_URL, userData);
 
-export const updateUserRequest = (id_usuario: number, userData: UpdateUserDTO) => 
-  api.put<User>(`${USER_BASE_URL}/${id_usuario}`, userData); 
+export const updateUserRequest = (id_usuario: number, userData: UpdateUserDTO) => api.put<User>(`${USER_BASE_URL}/${id_usuario}`, userData);
 
-export const deleteUserRequest = (id_usuario: number) => 
-  api.delete<void>(`${USER_BASE_URL}/${id_usuario}`);
+export const deleteUserRequest = (id_usuario: number) => api.delete<void>(`${USER_BASE_URL}/${id_usuario}`);

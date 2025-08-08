@@ -1,5 +1,3 @@
-// backend/src/api/controllers/user.controller.js
-
 import bcrypt from "bcryptjs";
 
 export const getUsers = async (req, res) => {
@@ -34,7 +32,7 @@ export const createUser = async (req, res) => {
     const newUser = await User.create(req.body);
     const io = req.app.get("io");
     const tenantId = req.headers["x-tenant-id"];
-    io.to(`tenant_${tenantId}`).emit("nuevo_usuario", newUser); // Emite el evento con el nuevo usuario
+    io.to(`tenant_${tenantId}`).emit("nuevo_usuario", newUser);
     res.status(201).json(newUser);
   } catch (error) {
     console.error("Error al crear usuario:", error);
@@ -63,7 +61,7 @@ export const updateUser = async (req, res, next) => {
 
     const io = req.app.get("io");
     const tenantId = req.headers["x-tenant-id"];
-    io.to(`tenant_${tenantId}`).emit("usuario_actualizado", usuario); // Emite el evento con el usuario actualizado
+    io.to(`tenant_${tenantId}`).emit("usuario_actualizado", usuario);
 
     res.json({ message: "Usuario actualizado correctamente", user: usuario });
   } catch (error) {
@@ -84,7 +82,7 @@ export const deleteUser = async (req, res) => {
 
     const io = req.app.get("io");
     const tenantId = req.headers["x-tenant-id"];
-    io.to(`tenant_${tenantId}`).emit("usuario_eliminado", id_usuario); // Emite el evento con el id del usuario eliminado
+    io.to(`tenant_${tenantId}`).emit("usuario_eliminado", id_usuario);
 
     res.status(204).json({ message: "Usuario eliminado exitosamente." });
   } catch (error) {

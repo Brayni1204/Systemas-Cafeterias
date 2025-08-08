@@ -1,5 +1,3 @@
-// backend/src/api/routes/user.routes.js
-
 import { Router } from "express";
 import {
   getUsers,

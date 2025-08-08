@@ -1,76 +1,28 @@
-// frontend/src/pages/admin/GestionUsuariosPage.tsx
-
 import React, { useState, useEffect, useMemo } from 'react';
-// Ya no importamos AdminLayout aquí, ya que es el componente padre en AppRouter
-// import { AdminLayout } from '../../layouts/AdminLayout'; 
 import type { User, UserFormValues } from '../../types/user.types';
 import { getUsersRequest, createUserRequest, updateUserRequest, deleteUserRequest } from '../../api/user.api';
-import { UserEditModal } from '../../components/UserEditModal'; // Importa el modal nombrado
-import { useAuth } from '../../hooks/useAuth'; // Para obtener el companyName
+import { UserEditModal } from '../../components/UserEditModal';
+import { useAuth } from '../../hooks/useAuth';
 import io from 'socket.io-client';
 
-// Conexión WebSocket global (se recomienda manejarla en un contexto o de forma más centralizada en apps grandes)
-const socket = io('http://localhost:4000'); // Asegúrate de que esta URL sea la de tu backend
+const socket = io('http://localhost:4000');
 
 const GestionUsuariosPage: React.FC = () => {
-  // CORRECCIÓN: Accede a 'companyName' (que usaremos como tenantId) y 'isAuthenticated'
-  const { companyName, isAuthenticated } = useAuth(); 
+  const { companyName, isAuthenticated } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<UserFormValues | null>(null); // Cambiado a null por defecto
+  const [selectedUser, setSelectedUser] = useState<UserFormValues | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-
-  useEffect(() => {
-    console.log('useEffect en GestionUsuariosPage ejecutado. companyName:', companyName); // DEBUG
-    // CORRECCIÓN: Solo intenta cargar usuarios y conectar WS si isAuthenticated y companyName están definidos
-    if (isAuthenticated) {
-
-      fetchUsers();
-
-      if (companyName) {
-        const tenantRoom = `tenant_${companyName}`; 
-        socket.emit('join_tenant_room', tenantRoom);
-        console.log(`Socket unido a la sala: ${tenantRoom}`);
-      }
-
-      // Listeners de WebSocket para actualizaciones en tiempo real
-      const handleNewUser = (newUser: User) => {
-        setUsers(prev => [newUser, ...prev]);
-        console.log('Nuevo usuario recibido via WS:', newUser);
-      };
-      const handleUpdatedUser = (updatedUser: User) => {
-        setUsers(prev => prev.map(u => u.id_usuario === updatedUser.id_usuario ? updatedUser : u));
-        console.log('Usuario actualizado via WS:', updatedUser);
-      };
-      const handleDeletedUser = (deletedUserId: number) => {
-        setUsers(prev => prev.filter(u => u.id_usuario !== deletedUserId));
-        console.log('Usuario eliminado via WS:', deletedUserId);
-      };
-      
-      socket.on('nuevo_usuario', handleNewUser);
-      socket.on('usuario_actualizado', handleUpdatedUser);
-      socket.on('usuario_eliminado', handleDeletedUser);
-
-      // Función de limpieza para evitar fugas de memoria
-      return () => {
-        socket.off('nuevo_usuario', handleNewUser);
-        socket.off('usuario_actualizado', handleUpdatedUser);
-        socket.off('usuario_eliminado', handleDeletedUser);
-      };
-    }
-  }, [isAuthenticated, companyName]); // Dependencias actualizadas
 
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getUsersRequest(); 
-      console.log('Respuesta de la API al obtener usuarios:', res); // DEBUG
-      console.log('Datos de usuarios recibidos:', res.data); // DEBUG
-      setUsers(res.data); 
+      const res = await getUsersRequest();
+      setUsers(res.data);
     } catch (err) {
       console.error("Error al cargar usuarios:", err);
       setError("No se pudieron cargar los usuarios. Inténtalo de nuevo más tarde.");
@@ -79,13 +31,45 @@ const GestionUsuariosPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUsers();
+
+      if (companyName) {
+        const tenantRoom = `tenant_${companyName}`;
+        socket.emit('join_tenant_room', tenantRoom);
+        console.log(`Socket unido a la sala: ${tenantRoom}`);
+      }
+
+      const handleNewUser = (newUser: User) => {
+        setUsers(prev => [newUser, ...prev]);
+      };
+      const handleUpdatedUser = (updatedUser: User) => {
+        setUsers(prev => prev.map(u => u.id_usuario === updatedUser.id_usuario ? updatedUser : u));
+      };
+      const handleDeletedUser = (deletedUserId: number) => {
+        setUsers(prev => prev.filter(u => u.id_usuario !== deletedUserId));
+      };
+      
+      socket.on('nuevo_usuario', handleNewUser);
+      socket.on('usuario_actualizado', handleUpdatedUser);
+      socket.on('usuario_eliminado', handleDeletedUser);
+
+      return () => {
+        socket.off('nuevo_usuario', handleNewUser);
+        socket.off('usuario_actualizado', handleUpdatedUser);
+        socket.off('usuario_eliminado', handleDeletedUser);
+      };
+    }
+  }, [isAuthenticated, companyName]);
+
   const handleAddUser = () => {
-    setSelectedUser(null); // Para asegurar que el modal esté en modo creación
+    setSelectedUser(null);
     setIsModalOpen(true);
   };
 
   const handleEditUser = (user: User) => {
-    setSelectedUser(user); // Precarga los datos del usuario para edición
+    setSelectedUser(user);
     setIsModalOpen(true);
   };
 
@@ -93,7 +77,7 @@ const GestionUsuariosPage: React.FC = () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
         await deleteUserRequest(userId);
-        // La actualización de la UI se manejará por el evento WebSocket 'usuario_eliminado'
+        fetchUsers(); // 👈 RECARGA LA TABLA DESPUÉS DE ELIMINAR
       } catch (err) {
         console.error("Error al eliminar usuario:", err);
         setError("No se pudo eliminar el usuario.");
@@ -108,7 +92,7 @@ const GestionUsuariosPage: React.FC = () => {
       } else {
         await createUserRequest(userData);
       }
-      // La actualización de la UI se manejará por los eventos WebSocket 'nuevo_usuario' o 'usuario_actualizado'
+      fetchUsers(); // 👈 RECARGA LA TABLA DESPUÉS DE GUARDAR O CREAR
     } catch (err: unknown) {
       console.error("Error al guardar usuario:", err);
       if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -118,16 +102,15 @@ const GestionUsuariosPage: React.FC = () => {
         setError("No se pudo guardar el usuario. Verifica los datos e intenta de nuevo.");
       }
     } finally {
-      handleCloseModal(); // Cierra el modal después de intentar guardar
+      handleCloseModal();
     }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedUser(null); // Limpia el usuario seleccionado al cerrar el modal
+    setSelectedUser(null);
   };
 
-  // Filtrado de usuarios
   const filteredUsers = useMemo(() => {
     return users
       .filter(user => roleFilter === 'all' || user.rol === roleFilter)
@@ -135,7 +118,6 @@ const GestionUsuariosPage: React.FC = () => {
   }, [users, roleFilter, searchTerm]);
 
   return (
-    // AdminLayout ya es el componente padre en AppRouter, no lo envuelvas aquí
     <div className="container mx-auto p-6 bg-white rounded-lg shadow-md font-inter">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Gestión de Usuarios</h1>
 
@@ -212,7 +194,7 @@ const GestionUsuariosPage: React.FC = () => {
       )}
 
       <UserEditModal
-        isOpen={isModalOpen} 
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveUser}
         currentUser={selectedUser}

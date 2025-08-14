@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 
 export const getUsers = async (req, res) => {
   try {
-    const { User } = req.tenantModels;
-    const users = await User.findAll();
+    const { Usuario } = req.tenantModels; // <-- Corregido de User a Usuario
+    const users = await Usuario.findAll(); // <-- Corregido de User a Usuario
     res.json(users);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
@@ -13,9 +13,9 @@ export const getUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const { User } = req.tenantModels;
+    const { Usuario } = req.tenantModels; // <-- Corregido
     const { id_usuario } = req.params;
-    const user = await User.findByPk(id_usuario);
+    const user = await Usuario.findByPk(id_usuario); // <-- Corregido
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
@@ -28,8 +28,8 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { User } = req.tenantModels;
-    const newUser = await User.create(req.body);
+    const { Usuario } = req.tenantModels; // <-- Corregido
+    const newUser = await Usuario.create(req.body); // <-- Corregido
     const io = req.app.get("io");
     const tenantId = req.headers["x-tenant-id"];
     io.to(`tenant_${tenantId}`).emit("nuevo_usuario", newUser);
@@ -42,11 +42,11 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res, next) => {
   try {
-    const { User } = req.tenantModels;
+    const { Usuario } = req.tenantModels; // <-- Corregido
     const { id_usuario } = req.params;
     const { nombre, email, password, rol } = req.body;
 
-    const usuario = await User.findByPk(id_usuario);
+    const usuario = await Usuario.findByPk(id_usuario); // <-- Corregido
 
     if (!usuario) {
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -71,9 +71,10 @@ export const updateUser = async (req, res, next) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const { User } = req.tenantModels;
+    const { Usuario } = req.tenantModels; // <-- Corregido
     const { id_usuario } = req.params;
-    const deletedRows = await User.destroy({
+    const deletedRows = await Usuario.destroy({
+      // <-- Corregido
       where: { id_usuario },
     });
     if (deletedRows === 0) {

@@ -1,14 +1,15 @@
 // backend/src/api/controllers/auth.controller.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { defineUserModel } from "../models/Usuario.js";
+// Ya no necesitas la siguiente línea, puedes borrarla.
+// import { defineUserModel } from "../models/Usuario.js";
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const { User } = req.tenantModels; // <-- Accede al modelo User desde req.tenantModels
-    const user = await User.findOne({ where: { email } });
+    const { Usuario } = req.tenantModels;
+    const user = await Usuario.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: "Credenciales incorrectas." });
     }
@@ -18,11 +19,13 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Credenciales incorrectas." });
     }
 
+    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
     const payload = {
-      id: user.id,
+      id: user.id_usuario, // Cambia 'user.id' a 'user.id_usuario'
       rol: user.rol,
-      tenantId: req.tenant.id, // Opcional: incluir el ID del inquilino en el token
+      tenantId: req.tenant.id,
     };
+    // --- FIN DE LA CORRECCIÓN ---
 
     jwt.sign(
       payload,

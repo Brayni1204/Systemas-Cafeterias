@@ -4,6 +4,9 @@ import Tenant from '../models/Tenant.js';
 import { defineUserModel } from '../models/Usuario.js';
 // ¡Importante! Ahora importamos la nueva función del modelo de productos
 import { defineProductoModel } from '../models/Producto.js';
+import { defineClienteModel } from "../models/Cliente.js";
+import { definePedidoModel } from "../models/Pedido.js";
+import { defineDetallePedidoModel } from "../models/DetallePedido.js";
 
 export const createTenant = async (req, res) => {
   const { subdomain, companyName, adminEmail, adminPassword } = req.body;
@@ -20,9 +23,17 @@ export const createTenant = async (req, res) => {
     // Define y sincroniza los modelos para el nuevo inquilino
     const Usuario = defineUserModel(tenantConnection);
     const Producto = defineProductoModel(tenantConnection); // <-- AÑADIDO
+    const Cliente = defineClienteModel(tenantConnection);
+    const Pedido = definePedidoModel(tenantConnection);
+    const DetallePedido = defineDetallePedidoModel(tenantConnection);
+    
     
     await Usuario.sync({ alter: true });
     await Producto.sync({ alter: true }); // <-- AÑADIDO
+    await Cliente.sync({ alter: true });
+    await Pedido.sync({ alter: true });
+    await DetallePedido.sync({ alter: true });
+    
     console.log(`Tablas (usuarios, productos) creadas en la base de datos ${dbName}.`);
 
     await Usuario.create({

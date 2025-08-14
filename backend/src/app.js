@@ -14,7 +14,10 @@ import Superadmin from "./api/models/Superadmin.js";
 import superadminRoutes from "./api/routes/superadmin.routes.js";
 import productoRoutes from "./api/routes/productos.routes.js";
 import authRoutes from "./api/routes/auth.routes.js";
-import userRoutes from './api/routes/user.routes.js';
+import userRoutes from "./api/routes/user.routes.js";
+import pedidoRoutes from "./api/routes/pedidos.routes.js";
+import clienteRoutes from "./api/routes/cliente.routes.js";
+import pagoRoutes from "./api/routes/pagos.routes.js";
 
 // Middlewares
 import { tenantMiddleware } from "./api/middlewares/tenant.middleware.js";
@@ -42,7 +45,14 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api", superadminRoutes);
-app.use("/api/v1", tenantMiddleware, [productoRoutes, authRoutes, userRoutes]);
+app.use("/api/v1", pagoRoutes);
+app.use("/api/v1", tenantMiddleware, [
+  productoRoutes,
+  authRoutes,
+  userRoutes,
+  pedidoRoutes,
+  clienteRoutes,
+]);
 
 io.on("connection", (socket) => {
   console.log("Un cliente se ha conectado vía WebSocket:", socket.id);

@@ -16,6 +16,11 @@ interface Producto {
   stock: number;
 }
 
+interface StockUpdatePayload {
+  id_producto: number;
+  stock: number;
+}
+
 // Tipo para el formulario de creación
 type CreateProductoDTO = Omit<Producto, 'id_producto' | 'estado' | 'createdAt' | 'updatedAt'>;
 
@@ -50,14 +55,28 @@ function GestionProductosPage() {
     const handleUpdatedProduct = (updatedProduct: Producto) => {
       setProductos(prev => prev.map(p => p.id_producto === updatedProduct.id_producto ? updatedProduct : p));
     };
+
+     // --- LISTENER NUEVO PARA EL STOCK ---
+    const handleStockUpdate = (productosActualizados: StockUpdatePayload[]) => {
+      setProductos(currentProducts => 
+        currentProducts.map(p => {
+          // Buscamos si este producto está en la lista de actualizados
+          const updatedInfo = productosActualizados.find(up => up.id_producto === p.id_producto);
+          // Si lo encontramos, devolvemos el producto con el nuevo stock. Si no, lo dejamos como está.
+          return updatedInfo ? { ...p, stock: updatedInfo.stock } : p;
+        })
+      );
+    };
     
     socket.on('nuevo_producto', handleNewProduct);
     socket.on('producto_actualizado', handleUpdatedProduct);
 
+    socket.on('stock_actualizado', handleStockUpdate);
     // Función de limpieza para evitar fugas de memoria
     return () => {
       socket.off('nuevo_producto', handleNewProduct);
       socket.off('producto_actualizado', handleUpdatedProduct);
+      socket.off('stock_actualizado', handleStockUpdate);
     };
   }, []);
 
@@ -134,6 +153,7 @@ function GestionProductosPage() {
                 <th className="p-4 font-semibold text-gray-600">Producto</th>
                 <th className="p-4 font-semibold text-gray-600 hidden md:table-cell">Categoría</th>
                 <th className="p-4 font-semibold text-gray-600">Precio</th>
+                <th className="p-4 font-semibold text-gray-600">Stock</th>
                 <th className="p-4 font-semibold text-gray-600">Estado</th>
                 <th className="p-4 font-semibold text-gray-600 text-right">Acciones</th>
               </tr>
@@ -144,6 +164,7 @@ function GestionProductosPage() {
                   <td className="p-4 font-medium text-gray-900">{p.nombre}</td>
                   <td className="p-4 capitalize text-gray-600 hidden md:table-cell">{p.categoria}</td>
                   <td className="p-4 text-gray-600">S/ {p.precio.toFixed(2)}</td>
+                  <td className={`p-4 font-bold ${p.stock < 10 ? 'text-red-500' : 'text-gray-600'}`}>{p.stock}</td>
                   <td className="p-4">
                     <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${p.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {p.estado}
